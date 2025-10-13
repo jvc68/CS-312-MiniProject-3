@@ -9,12 +9,14 @@
 
 	<body>
 		<h1 class="title">Daily Blog:</h1>
+		<a href="signIn">Sign In</a>
+		<a href="signUp">Sign Up</a>
 		<hr>
 		<form action="/addPost" method="POST" class="addPost">
 			<h2>Create Post</h2>
 
-			<label for="name">Name:</label>
-			<input type="text" name="name" placeholder="Your Name" required maxlength="15">
+			<label for="creator_name">Name:</label>
+			<input type="text" name="creator_name" placeholder="Your Name" required maxlength="15">
 			<br>
 
 			<label for="title"> Title:</label>
@@ -22,7 +24,7 @@
 			<br>
 
 			<p>Content: </p>
-			<textarea class="postInput" name="content" placeholder="Write about your day!" required maxlength="300"></textarea>
+			<textarea class="postInput" name="body" placeholder="Write about your day!" required maxlength="300"></textarea>
 			<br>
 
 			<button type="submit">Add Post</button>
@@ -42,17 +44,18 @@
 				<div class="post">
 
 					<h2><%= post.title %></h3>
-					<p>by: <%= post.name %></p>
+					<p>by: <%= post.creator_name %></p>
 
 					<hr>
 
-					<p><%= post.content %></p>
-					<p class="time"><%= post.time %></p>
+					<p><%= post.body %></p>
+					<p class="time"><%= post.date_created %></p>
 
 
 					<form class="options" action="/editPost/<%= index %>" method="GET">
 						<button type="submit" class="btn-edit">Edit</button>
 					</form>
+
 					<form class="options" action="/delete/<%= index %>" method="POST">
 						<button type="submit" class="btn-delete">Delete</button>
 					</form>
