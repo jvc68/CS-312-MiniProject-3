@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Daily Blog</title>
+		<link rel="stylesheet" href="/styles.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+
+	<body>
+		<h1 class="title">Daily Blog:</h1>
+		<hr>
+		<form action="/addPost" method="POST" class="addPost">
+			<h2>Create Post</h2>
+
+			<label for="name">Name:</label>
+			<input type="text" name="name" placeholder="Your Name" required maxlength="15">
+			<br>
+
+			<label for="title"> Title:</label>
+			<input type="text" name="title" placeholder="Title" required maxlength="30">
+			<br>
+
+			<p>Content: </p>
+			<textarea class="postInput" name="content" placeholder="Write about your day!" required maxlength="300"></textarea>
+			<br>
+
+			<button type="submit">Add Post</button>
+	  	</form>
+
+		<hr>
+
+		<div class="postArea">
+
+			<% if (posts.length == 0) { %>
+				<div class="post">
+				<h3>No Current Posts...</h3>
+				</div>
+			<% } %>
+
+			<% posts.forEach((post, index) => { %>
+				<div class="post">
+
+					<h2><%= post.title %></h3>
+					<p>by: <%= post.name %></p>
+
+					<hr>
+
+					<p><%= post.content %></p>
+					<p class="time"><%= post.time %></p>
+
+
+					<form class="options" action="/editPost/<%= index %>" method="GET">
+						<button type="submit" class="btn-edit">Edit</button>
+					</form>
+					<form class="options" action="/delete/<%= index %>" method="POST">
+						<button type="submit" class="btn-delete">Delete</button>
+					</form>
+
+				</div>
+			<% }) %>
+		</div>
+		
+
+	</body>
+
+</html>
