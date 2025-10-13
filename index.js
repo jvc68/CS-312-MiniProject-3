@@ -20,9 +20,10 @@ const db = new pg.Client({
 db.connect();
 
 const port = 3000;
-//Array to hold posts later
+
 let posts = []
-let exists = false
+let message = ""
+
 db.query(`SELECT * FROM blogs`, (err, res) => {
 	if (err) {
 		console.error(err.stack);
@@ -47,11 +48,11 @@ app.get("/index", (req, res) => {
 });
 
 app.get("/signUp", (req, res) => {
-	res.render("signUp.ejs", { exists });
+	res.render("signUp.ejs", { message });
 });
 
 app.get("/signIn", (req, res) => {
-	res.render("signIn.ejs", { exists });
+	res.render("signIn.ejs", { message });
 });
 
 app.post("/attemptSignUp", async (req, res) => {
@@ -64,19 +65,50 @@ app.post("/attemptSignUp", async (req, res) => {
 		]);
 
 		if (result.rows.length > 0) {
-			let exists = true
-			res.render("signUp.ejs", { exists });
+			message = "User Id already exists"
+			res.render("signUp.ejs", { message });
 		} else {
 			const insertion = await db.query(
 				"INSERT INTO users VALUES ($1, $2, $3)",
 				[user_id, password, name]
 			);
-			console.log(result);
-			res.render("index.ejs", { posts });
+			message = ""
+			res.render("signIn.ejs", { message });
 		}
 	} catch (err) {
 		console.log(err);
 	}
+})
+
+
+app.post("/attemptSignIn", async (req, res) => {
+	//Receive the bodyparsed stuff in proper format
+	const { user_id, password } = req.body;
+
+	try {
+		const result = await db.query("SELECT * FROM users WHERE user_id = $1", [
+			user_id,
+		]);
+
+		console.log(result.rows[0])
+
+		if (result.rows.length > 0) {
+			if (result.rows[0].password == password) {
+				res.render("index.ejs", { posts })
+			} else {
+				message = "Password is wrong";
+				res.render("signIn.ejs", { message })
+			}
+		} else {
+			message = "User doesn't exist"
+			res.render("signIn.ejs", { message })
+		}
+
+	} catch (err) {
+		console.log(err);
+	}
+
+
 })
 
 

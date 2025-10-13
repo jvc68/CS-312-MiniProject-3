@@ -8,27 +8,27 @@
 	</head>
 
 	<body>
-		<h1 class="title">Sign In!</h1>
+		<h1 class="title">Sign In</h1>
 		<a href="index">Home</a>
 		<a href="signUp">Sign Up</a>
 		<hr>
-		<form action="/attemptSignUp" method="POST" class="addPost">
-			<h2>Sign in</h2>
+		<form action="/attemptSignIn" method="POST" class="addPost">
+			<h2>Sign In</h2>
 
-			<label for="creator_name">Name:</label>
-			<input type="text" name="creator_name" placeholder="Your Name" required maxlength="15">
+
+			<label for="user_id">Username:</label>
+			<input type="text" name="user_id" required maxlength="30">
 			<br>
 
-			<label for="title"> Title:</label>
-			<input type="text" name="title" placeholder="Title" required maxlength="30">
+			<label for="password">Password:</label>
+			<input type="text" name="password" required maxlength="12">
 			<br>
-
-			<p>Content: </p>
-			<textarea class="postInput" name="body" placeholder="Write about your day!" required maxlength="300"></textarea>
-			<br>
-
-			<button type="submit">Add Post</button>
+			<button type="submit">Sign Up</button>
 	  	</form>
+
+		<% if (message != "") { %>
+			<p><%= message %></p>
+		<% } %>
 
 		
 

@@ -29,8 +29,8 @@
 			<button type="submit">Sign Up</button>
 	  	</form>
 
-		<% if (exists == true) { %>
-			<p>Error, user already exists! Try logging in</p>
+		<% if (message != "") { %>
+			<p><%= message %></p>
 		<% } %>
 
 		
