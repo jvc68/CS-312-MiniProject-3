@@ -9,6 +9,7 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 const db = new pg.Client({
 	user: "postgres",
 	host: "localhost",
@@ -23,6 +24,9 @@ const port = 3000;
 
 let posts = []
 let message = ""
+let currentUser = ""
+
+console.log(currentUser);
 
 db.query(`SELECT * FROM blogs`, (err, res) => {
 	if (err) {
@@ -44,14 +48,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/index", (req, res) => {
-	res.render("index.ejs", { posts });
+	res.render("index.ejs", { posts, currentUser, message });
 });
 
 app.get("/signUp", (req, res) => {
+	message = ""
 	res.render("signUp.ejs", { message });
 });
 
 app.get("/signIn", (req, res) => {
+	message = ""
 	res.render("signIn.ejs", { message });
 });
 
@@ -90,11 +96,11 @@ app.post("/attemptSignIn", async (req, res) => {
 			user_id,
 		]);
 
-		console.log(result.rows[0])
-
 		if (result.rows.length > 0) {
 			if (result.rows[0].password == password) {
-				res.render("index.ejs", { posts })
+				currentUser = user_id
+				message = ""
+				res.render("index.ejs", { posts, currentUser, message })
 			} else {
 				message = "Password is wrong";
 				res.render("signIn.ejs", { message })
@@ -111,38 +117,64 @@ app.post("/attemptSignIn", async (req, res) => {
 
 })
 
-
 //Posting Capabilities
-app.post("/addPost", (req, res) => {
-	//Receive the bodyparsed stuff in proper format
-	const { creator_name, title, body, } = req.body;
+app.post("/addPost", async (req, res) => {
+	if (currentUser == "") {
+		message = "Not signed in!"
+		res.render("index.ejs", { posts, currentUser, message })
+		return
+	}
+
+	const { creator_name, title, body } = req.body;
+
+	const findPrimaryKey = await db.query(`SELECT MAX(blog_id) FROM blogs`);
+	let blog_id = findPrimaryKey.rows[0].max
 
 	const result = db.query(`
 		INSERT INTO blogs (creator_name, title, body, date_created, creator_user_id) 
 		VALUES ($1, $2, $3, $4, $5)`,
-		[creator_name, title, body, new Date().toLocaleString(), 1]);
+		[creator_name, title, body, new Date().toLocaleString(), currentUser]);
+
+
 
 	//Add to array
-	posts.push({ creator_name, title, body, date_created: new Date().toLocaleString() });
+	posts.push({ blog_id, creator_name, title, body, date_created: new Date().toLocaleString() });
 	//reload home page
+	message = ""
 	res.redirect("/index");
 });
 
 
 //Grabbing the post to edit,
-app.get("/editPost/:index", (req, res) => {
+app.get("/editPost/:index", async (req, res) => {
 	const post = posts[req.params.index]
-	//Rendering the edit post page
-	res.render("editPost.ejs", { post, index: req.params.index })
+	let blog_id = post.blog_id;
+	const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
+
+	console.log("Post by: ", verifyUser.rows[0].creator_user_id)
+	console.log("You are: ", currentUser)
+	console.log("Do they Match? ", verifyUser.rows[0].creator_user_id === currentUser)
+
+	if (verifyUser.rows[0].creator_user_id === currentUser) {
+		res.render("editPost.ejs", { post, index: req.params.index })
+	} else {
+		message = "Not yours"
+		res.redirect("/")
+	}
+
 });
 
 //Posting the edited post
-app.post("/editPost/:index", (req, res) => {
-	//Receive body
-	const { name, title, content } = req.body;
-	//Set post at index to body.
-	posts[req.params.index] = { name, title, content, time: new Date().toLocaleString() }
-	//Reload home page
+app.post("/editPost/:index", async (req, res) => {
+	const { creator_name, title, body } = req.body;
+	let blog_id = posts[req.params.index].blog_id
+	posts[req.params.index] = { blog_id, creator_name, title, body, date_created: new Date().toLocaleString() }
+
+	const verifyUser = await db.query(`UPDATE blogs
+	SET creator_name = $1, title = $2, body = $3, date_created = $4
+	WHERE blog_id = $5`, [creator_name, title, body, new Date().toLocaleString(), blog_id]);
+
+	message = ""
 	res.redirect("/index");
 });
 
@@ -151,5 +183,6 @@ app.post("/delete/:index", (req, res) => {
 	//Delete 1 post at given index.
 	posts.splice(req.params.index, 1);
 	//Reload home page
+	message = ""
 	res.redirect("/index");
 });
