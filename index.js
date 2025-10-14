@@ -179,10 +179,30 @@ app.post("/editPost/:index", async (req, res) => {
 });
 
 //Delete post
-app.post("/delete/:index", (req, res) => {
-	//Delete 1 post at given index.
-	posts.splice(req.params.index, 1);
-	//Reload home page
-	message = ""
-	res.redirect("/index");
+app.post("/delete/:index", async (req, res) => {
+
+
+
+	const post = posts[req.params.index]
+	let blog_id = post.blog_id;
+	const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
+
+	console.log("Post by: ", verifyUser.rows[0].creator_user_id)
+	console.log("You are: ", currentUser)
+	console.log("Do they Match? ", verifyUser.rows[0].creator_user_id === currentUser)
+
+	if (verifyUser.rows[0].creator_user_id === currentUser) {
+		posts.splice(req.params.index, 1);
+
+		//Reload home page
+		message = ""
+		res.redirect("/index");
+		await db.query(`DELETE FROM blogs WHERE blog_id = $1`, [blog_id])
+
+	} else {
+		message = "Not yours"
+		res.redirect("/")
+	}
+
+
 });
