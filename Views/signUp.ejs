@@ -27,11 +27,9 @@
 			<input type="text" name="password" required maxlength="12">
 			<br>
 			<button type="submit">Sign Up</button>
+			<p class="Error"> <%= message %></p>
 	  	</form>
 
-		<% if (message != "") { %>
-			<p><%= message %></p>
-		<% } %>
 
 		
 

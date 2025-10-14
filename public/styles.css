@@ -19,6 +19,32 @@ input {
 	max-width: 20vw;
 }
 
+a {
+	border: 2px solid blue;
+	padding: 1px;
+	background-color: blue;
+	color: white;
+	border-radius: 5px;
+}
+
+.Error {
+	color: white;
+	background-color: red;
+	border-radius: 5px;
+	padding: 2px;
+	font-size: large;
+}
+
+.curUser {
+	border: 2px solid blue;
+	padding: 1px;
+	background-color: blue;
+	color: white;
+	border-radius: 5px;
+	font-size: 3ch;
+	max-width: 10vw;
+}
+
 .title {
 	color: black;
 	text-align: center;
