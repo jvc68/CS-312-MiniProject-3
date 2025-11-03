@@ -43,11 +43,46 @@ db.query(`SELECT * FROM blogs`, (err, res) => {
 });
 
 
-
 app.get("/api/posts", (req, res) => {
 	res.json(posts)
 
 });
+
+app.get("/api/currentUser", (req, res) => {
+	res.json({ user: currentUser })
+});
+
+app.post("/attemptSignIn", async (req, res) => {
+	const { user_id, password } = req.body;
+	console.log("Credentials:")
+	console.log("user_id: ", user_id)
+	console.log("password: ", password)
+	try {
+		//Search for user id
+		const result = await db.query("SELECT * FROM users WHERE user_id = $1", [
+			user_id,
+		]);
+
+		//If it does exist, send them to the home page.
+		if (result.rows.length > 0) {
+			//Ensure the password is correct.
+			if (result.rows[0].password == password) {
+				currentUser = user_id
+				res.json({ message: "Signed in successfully" });
+			} else {
+				return res.status(401).json({ error: "Password is Wrong." });
+			}
+			//Otherwise, let user know
+		} else {
+			res.status(401).json({ error: "Username is Wrong!" });
+		}
+
+	} catch (err) {
+		res.status(500).json({ error: "Error signing in." });
+	}
+
+
+})
 
 
 // Start the server and log a message
