@@ -4,15 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 
 
 export default function Home() {
-	const [newLog, setLog] = useState("2");
+	const [posts, setPosts] = useState([]);
 
 	useEffect(() => {
-		console.log("Before anything, newlog is ", newLog)
 		const fetchData = async () => {
 			try {
-				const res = await axios.get("http://localhost:3001/api");
-				setLog(res.data.post);
-				console.log("Hey newlog is now: ", newLog);
+				const res = await axios.get("http://localhost:3001/api/posts");
+
+				setPosts(res.data);
+				console.log(res.data);
 			} catch (err) {
 				console.log("Error, axios didn't get!");
 			}
@@ -25,7 +25,33 @@ export default function Home() {
 		<div>
 			<h1 className="title">Daily Blog:</h1>
 			<p className="curUser">Current User:</p>
-			<Link to="/signin">Sign In</Link>  <Link to="/signup">Sign Up</Link>
+			<Link to="/signin">Sign In</Link> <Link to="/signup">Sign Up</Link>
+
+			<div className="postArea">
+				{posts.map((post, index) =>
+					<div className="post">
+
+						<h2>{post.title}</h2>
+						<p>by: {post.creator_name}</p>
+
+						<hr />
+
+						<p>{post.body}</p>
+						<p className="time">Posted on: {post.date_created}</p>
+
+
+						<form class="options" action="/editPost/<%= index %>" method="GET">
+							<button type="submit" class="btn-edit">Edit</button>
+						</form>
+
+						<form class="options" action="/delete/<%= index %>" method="POST">
+							<button type="submit" class="btn-delete">Delete</button>
+						</form>
+
+					</div>
+				)}
+			</div>
+
 		</div>
 	);
 }

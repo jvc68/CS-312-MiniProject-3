@@ -74,6 +74,7 @@ a {
 	overflow-y: scroll;
 	max-height: 80vh;
 	margin-bottom: 20px;
+	margin-top: 20px;
 }
 
 .post {
