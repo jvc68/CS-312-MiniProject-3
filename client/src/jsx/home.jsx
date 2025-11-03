@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+
 
 export default function Home() {
 	const [newLog, setLog] = useState("2");
@@ -21,8 +23,9 @@ export default function Home() {
 
 	return (
 		<div>
-			<h1>I {newLog} hate React and Node Coupling</h1>
-			<p>Cus its hard and I don't yet</p>
+			<h1 className="title">Daily Blog:</h1>
+			<p className="curUser">Current User:</p>
+			<Link to="/signin">Sign In</Link>  <Link to="/signup">Sign Up</Link>
 		</div>
 	);
 }
