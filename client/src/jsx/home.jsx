@@ -10,6 +10,7 @@ export default function Home() {
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
 
+	//Grab posts and current user
 	const fetchData = async () => {
 		try {
 			const getPosts = await axios.get("http://localhost:3001/api/posts");
@@ -17,29 +18,31 @@ export default function Home() {
 
 			const getCurrentUser = await axios.get("http://localhost:3001/api/currentUser");
 			setUser(getCurrentUser.data.user)
+			setError("")
 
 		} catch (err) {
 			console.log("Error, axios didn't get!");
 		}
 	};
 
+	//Handles adding a post
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
+			//Sends our form to my API, which handles the mess
 			await axios.post("http://localhost:3001/addPost", form, { withCredentials: true });
 			fetchData();
 			setForm({ creator_name: "", title: "", body: "" });
+			setError("")
 		} catch (err) {
 			setError("Something went wrong!");
 		}
 	};
-
+	//Handles editing a post, 
 	const editPost = async (id) => {
-		console.log("Post Data: ", posts[id]);
-		console.log("Post Owned By: ", posts[id].creator_user_id)
+		//Ensure the current user can only edit their posts
 		if (posts[id].creator_user_id === user) {
 			let blog_id = posts[id].blog_id;
-			console.log("Blog id: ", blog_id);
 			navigate(`/edit/${blog_id}/${id}`)
 		} else {
 			setError("Not Yours")
@@ -47,15 +50,15 @@ export default function Home() {
 
 	}
 
+	//Handles delting post
 	const deletePost = async (id) => {
-		console.log(id)
 		try {
 			await axios.post(`http://localhost:3001/delete/${id}`, {}, {
 				withCredentials: true,
 			});
-			// Refetch the posts list
+			// Reload Posts
 			fetchData();
-			// Throw an error if one occured
+			setError("")
 		} catch (err) {
 			setError("Not Your Post")
 			console.error(err);

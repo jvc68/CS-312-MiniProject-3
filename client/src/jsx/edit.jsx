@@ -9,9 +9,11 @@ export default function SignIn() {
 
 	const navigate = useNavigate();
 
+	//Grabs the specific post we are editing
 	const fetchData = async () => {
 		try {
 			const getPosts = await axios.get(`http://localhost:3001/api/posts/${id}`, { withCredentials: true })
+			//Populates form with old post
 			setForm(getPosts.data.post);
 		} catch (err) {
 			console.log("Error, axios didn't get!");
@@ -19,9 +21,12 @@ export default function SignIn() {
 	};
 
 	const handleSubmit = async (e) => {
+		//On submit
 		e.preventDefault();
 		try {
+			//Post the form to my API
 			await axios.post(`http://localhost:3001/editPost/${index}`, form);
+			//Load Home page
 			navigate("/");
 		} catch (err) {
 			setError("Something went wrong!");

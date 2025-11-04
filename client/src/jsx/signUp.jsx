@@ -11,7 +11,6 @@ export default function SignUp() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			console.log(form)
 			await axios.post("http://localhost:3001/attemptSignUp", form, { withCredentials: true });
 			navigate("/signIn");
 		} catch (err) {

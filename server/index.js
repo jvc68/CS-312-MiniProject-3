@@ -1,14 +1,12 @@
-// Import all needed packages
+// NECESSARY SET UP
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import pg from "pg";
 
 const app = express();
-// Set the port to host the backend on
 const port = 3001;
 
-// Setup Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -19,7 +17,6 @@ const db = new pg.Client({
 	password: "lucy1918",
 	port: 5432,
 });
-
 
 db.connect();
 
@@ -33,7 +30,7 @@ let posts = []
 let message = ""
 let currentUser = ""
 
-//Loads the database into the posts array
+//NECESSARY SET UP OVER
 db.query(`SELECT * FROM blogs`, (err, res) => {
 	if (err) {
 		console.error(err.stack);
@@ -42,12 +39,13 @@ db.query(`SELECT * FROM blogs`, (err, res) => {
 	}
 });
 
-
+//Returns list of all posts
 app.get("/api/posts", (req, res) => {
 	res.json(posts)
 
 });
 
+//Returns single post based on blog_id
 app.get("/api/posts/:id", async (req, res) => {
 	const { id } = req.params;
 	const result = await db.query("SELECT * FROM blogs WHERE blog_id = $1", [id]);
@@ -55,10 +53,12 @@ app.get("/api/posts/:id", async (req, res) => {
 
 });
 
+//Returns the currently signed in user
 app.get("/api/currentUser", (req, res) => {
 	res.json({ user: currentUser })
 });
 
+//Posts to the DB and main array
 app.post("/addPost", async (req, res) => {
 	//If not signed in, you cannot add a post.
 	if (currentUser == "") {
@@ -92,6 +92,7 @@ app.post("/addPost", async (req, res) => {
 	res.json({ message: "Added Post Successfully" });
 });
 
+//SIGNS UP a new user
 app.post("/attemptSignUp", async (req, res) => {
 	//Grab user input
 	const { name, user_id, password } = req.body;
@@ -118,6 +119,7 @@ app.post("/attemptSignUp", async (req, res) => {
 	}
 })
 
+//SIGNS IN an existing user
 app.post("/attemptSignIn", async (req, res) => {
 	const { user_id, password } = req.body;
 	try {
@@ -151,18 +153,11 @@ app.get("/editPost/:index", async (req, res) => {
 	//Grab proper post
 	const post = posts[req.params.index]
 	if (post) {
-		//Grab their location in the database
 		let blog_id = post.blog_id;
-
-		//Grab the post from the database
 		const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
-
-		//If the post was made by the current user of the website, allow them to edit.
 		if (verifyUser.rows[0].creator_user_id === currentUser) {
-			console.log("Success!")
 			res.json({ message: "Yer" })
 		} else {
-			console.log("Current user != creator_user_id")
 			res.status(401).json("No")
 		}
 	}
@@ -172,16 +167,11 @@ app.get("/editPost/:index", async (req, res) => {
 
 //Edit page
 app.post("/editPost/:index", async (req, res) => {
-
-	console.log(posts);
-	console.log(req.params)
-
 	const { creator_name, title, body } = req.body;
 	let blog_id = posts[req.params.index].blog_id
 	let creator_user_id = currentUser
 	posts[req.params.index] = { blog_id, creator_name, title, body, date_created: new Date().toLocaleString(), creator_user_id }
 
-	//Update database in the proper position.
 	await db.query(`UPDATE blogs
 	SET creator_name = $1, title = $2, body = $3, date_created = $4
 	WHERE blog_id = $5`, [creator_name, title, body, new Date().toLocaleString(), blog_id]);
@@ -190,6 +180,7 @@ app.post("/editPost/:index", async (req, res) => {
 	res.json({ message: "Success!" });
 });
 
+//Deletes a post
 app.post("/delete/:index", async (req, res) => {
 
 	const post = posts[req.params.index]
@@ -197,8 +188,6 @@ app.post("/delete/:index", async (req, res) => {
 		let blog_id = post.blog_id;
 		const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
 
-		//If the user is the same as the poster, then delete
-		console.log("Creator of Post: ", verifyUser.rows[0].creator_user_id, " Current User: ", currentUser)
 		if (verifyUser.rows[0].creator_user_id === currentUser) {
 			posts.splice(req.params.index, 1);
 			message = ""
@@ -206,7 +195,6 @@ app.post("/delete/:index", async (req, res) => {
 			await db.query(`DELETE FROM blogs WHERE blog_id = $1`, [blog_id])
 			//Otherwise refuse.
 		} else {
-			console.log("Post does not exist!")
 			res.status(401).json({ message: "Failure" })
 		}
 
@@ -214,7 +202,6 @@ app.post("/delete/:index", async (req, res) => {
 
 });
 
-// Start the server and log a message
 app.listen(port, () => {
 	console.log(`Server running on http://localhost:${port}`);
 });

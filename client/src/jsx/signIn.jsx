@@ -2,14 +2,15 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-// Function for the signin page
 export default function SignIn() {
 	const [form, setForm] = useState({ user_id: "", password: "" });
 	const [message, setMessage] = useState("");
 	const navigate = useNavigate();
 
+	//Handles submit
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		//Send form to api
 		try {
 			await axios.post("http://localhost:3001/attemptSignIn", form);
 			navigate("/");
