@@ -15,7 +15,6 @@ export default function SignUp() {
 			await axios.post("http://localhost:3001/attemptSignUp", form, { withCredentials: true });
 			navigate("/signIn");
 		} catch (err) {
-			console.log("B")
 			setError("Something went wrong!");
 		}
 	};

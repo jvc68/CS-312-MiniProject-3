@@ -54,7 +54,6 @@ app.get("/api/currentUser", (req, res) => {
 
 app.post("/addPost", async (req, res) => {
 	//If not signed in, you cannot add a post.
-	console.log("Hey now", currentUser);
 	if (currentUser == "") {
 		return res.status(401).json({ error: "Not Signed In!" });
 	}
@@ -88,7 +87,6 @@ app.post("/addPost", async (req, res) => {
 app.post("/attemptSignUp", async (req, res) => {
 	//Grab user input
 	const { name, user_id, password } = req.body;
-	console.log(name, " ", user_id, " ", password);
 
 	//Try to read from database
 	try {
@@ -114,9 +112,6 @@ app.post("/attemptSignUp", async (req, res) => {
 
 app.post("/attemptSignIn", async (req, res) => {
 	const { user_id, password } = req.body;
-	console.log("Credentials:")
-	console.log("user_id: ", user_id)
-	console.log("password: ", password)
 	try {
 		//Search for user id
 		const result = await db.query("SELECT * FROM users WHERE user_id = $1", [
@@ -141,9 +136,31 @@ app.post("/attemptSignIn", async (req, res) => {
 		res.status(500).json({ error: "Error signing in." });
 	}
 
-
 })
 
+app.post("/delete/:index", async (req, res) => {
+
+	const post = posts[req.params.index]
+	if (post) {
+		let blog_id = post.blog_id;
+		const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
+
+		//If the user is the same as the poster, then delete
+		console.log("Creator of Post: ", verifyUser.rows[0].creator_user_id, " Current User: ", currentUser)
+		if (verifyUser.rows[0].creator_user_id === currentUser) {
+			posts.splice(req.params.index, 1);
+			message = ""
+			res.json({ message: "Success" })
+			await db.query(`DELETE FROM blogs WHERE blog_id = $1`, [blog_id])
+			//Otherwise refuse.
+		} else {
+			console.log("Post does not exist!")
+			res.status(401).json({ message: "Failure" })
+		}
+
+	}
+
+});
 
 // Start the server and log a message
 app.listen(port, () => {

@@ -16,10 +16,9 @@ export default function Home() {
 			setPosts(getPosts.data);
 
 			const getCurrentUser = await axios.get("http://localhost:3001/api/currentUser");
-			setUser(getCurrentUser.data)
+			setUser(getCurrentUser.data.user)
 
 		} catch (err) {
-
 			console.log("Error, axios didn't get!");
 		}
 	};
@@ -31,8 +30,22 @@ export default function Home() {
 			fetchData();
 			setForm({ creator_name: "", title: "", body: "" });
 		} catch (err) {
-			console.log("B")
 			setError("Something went wrong!");
+		}
+	};
+
+	const deletePost = async (id) => {
+		console.log(id)
+		try {
+			await axios.post(`http://localhost:3001/delete/${id}`, {}, {
+				withCredentials: true,
+			});
+			// Refetch the posts list
+			fetchData();
+			// Throw an error if one occured
+		} catch (err) {
+			console.log("Delete Catching Error")
+			console.error(err);
 		}
 	};
 
@@ -44,7 +57,7 @@ export default function Home() {
 	return (
 		<div>
 			<h1 className="title">Daily Blog:</h1>
-			<p className="curUser">Current User: {user.user}</p>
+			<p className="curUser">Current User: {user}</p>
 			<Link to="/signin">Sign In</Link> <Link to="/signup">Sign Up</Link>
 
 
@@ -68,7 +81,7 @@ export default function Home() {
 				<br />
 
 				<button type="submit">Add Post</button>
-				<p className="Error"></p>
+				<p className="Error">{error}</p>
 			</form>
 
 
@@ -83,16 +96,11 @@ export default function Home() {
 						<hr />
 
 						<p>{post.body}</p>
-						<p className="time">Posted on: {post.date_created}</p>
+						<p className="time">Posted on: {post.date_created.toLocaleString()}</p>
 
-
-						<form className="options" action={`/editPost/${index}`} method="GET">
-							<button type="submit" className="btn-edit">Edit</button>
-						</form>
-
-						<form className="options" action={`/delete/${index}`} method="POST">
-							<button type="submit" className="btn-delete">Delete</button>
-						</form>
+						<button onClick={() => deletePost(index)}>
+							Delete
+						</button>
 
 					</div>
 				)}
