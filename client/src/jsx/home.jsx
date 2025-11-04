@@ -34,6 +34,19 @@ export default function Home() {
 		}
 	};
 
+	const editPost = async (id) => {
+		console.log("Post Data: ", posts[id]);
+		console.log("Post Owned By: ", posts[id].creator_user_id)
+		if (posts[id].creator_user_id === user) {
+			let blog_id = posts[id].blog_id;
+			console.log("Blog id: ", blog_id);
+			navigate(`/edit/${blog_id}/${id}`)
+		} else {
+			setError("Not Yours")
+		}
+
+	}
+
 	const deletePost = async (id) => {
 		console.log(id)
 		try {
@@ -44,7 +57,7 @@ export default function Home() {
 			fetchData();
 			// Throw an error if one occured
 		} catch (err) {
-			console.log("Delete Catching Error")
+			setError("Not Your Post")
 			console.error(err);
 		}
 	};
@@ -59,8 +72,7 @@ export default function Home() {
 			<h1 className="title">Daily Blog:</h1>
 			<p className="curUser">Current User: {user}</p>
 			<Link to="/signin">Sign In</Link> <Link to="/signup">Sign Up</Link>
-
-
+			<hr></hr>
 
 			<form onSubmit={handleSubmit} className="addPost">
 				<h2>Create Post</h2>
@@ -98,6 +110,10 @@ export default function Home() {
 						<p>{post.body}</p>
 						<p className="time">Posted on: {post.date_created.toLocaleString()}</p>
 
+						<button onClick={() => editPost(index)}>
+							Edit
+						</button>
+
 						<button onClick={() => deletePost(index)}>
 							Delete
 						</button>
@@ -106,6 +122,6 @@ export default function Home() {
 				)}
 			</div>
 
-		</div>
+		</div >
 	);
 }

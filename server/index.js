@@ -48,6 +48,13 @@ app.get("/api/posts", (req, res) => {
 
 });
 
+app.get("/api/posts/:id", async (req, res) => {
+	const { id } = req.params;
+	const result = await db.query("SELECT * FROM blogs WHERE blog_id = $1", [id]);
+	res.json({ post: result.rows[0] })
+
+});
+
 app.get("/api/currentUser", (req, res) => {
 	res.json({ user: currentUser })
 });
@@ -80,7 +87,8 @@ app.post("/addPost", async (req, res) => {
 	//Now that it's been done, we once again read the max pk as we will store it along with the post here in the array as well.
 	findPrimaryKey = await db.query(`SELECT MAX(blog_id) FROM blogs`);
 	blog_id = findPrimaryKey.rows[0].max
-	posts.push({ blog_id, creator_name, title, body, date_created: new Date().toLocaleString() });
+	let creator_user_id = currentUser
+	posts.push({ blog_id, creator_name, title, body, date_created: new Date().toLocaleString(), creator_user_id });
 	res.json({ message: "Added Post Successfully" });
 });
 
@@ -137,6 +145,50 @@ app.post("/attemptSignIn", async (req, res) => {
 	}
 
 })
+
+//This one was hard to do.
+app.get("/editPost/:index", async (req, res) => {
+	//Grab proper post
+	const post = posts[req.params.index]
+	if (post) {
+		//Grab their location in the database
+		let blog_id = post.blog_id;
+
+		//Grab the post from the database
+		const verifyUser = await db.query(`SELECT * FROM blogs WHERE blog_id = $1`, [blog_id]);
+
+		//If the post was made by the current user of the website, allow them to edit.
+		if (verifyUser.rows[0].creator_user_id === currentUser) {
+			console.log("Success!")
+			res.json({ message: "Yer" })
+		} else {
+			console.log("Current user != creator_user_id")
+			res.status(401).json("No")
+		}
+	}
+
+
+});
+
+//Edit page
+app.post("/editPost/:index", async (req, res) => {
+
+	console.log(posts);
+	console.log(req.params)
+
+	const { creator_name, title, body } = req.body;
+	let blog_id = posts[req.params.index].blog_id
+	let creator_user_id = currentUser
+	posts[req.params.index] = { blog_id, creator_name, title, body, date_created: new Date().toLocaleString(), creator_user_id }
+
+	//Update database in the proper position.
+	await db.query(`UPDATE blogs
+	SET creator_name = $1, title = $2, body = $3, date_created = $4
+	WHERE blog_id = $5`, [creator_name, title, body, new Date().toLocaleString(), blog_id]);
+
+	message = ""
+	res.json({ message: "Success!" });
+});
 
 app.post("/delete/:index", async (req, res) => {
 

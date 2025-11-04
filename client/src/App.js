@@ -3,6 +3,7 @@ import React from 'react';
 import Home from "./jsx/home.jsx";
 import SignIn from "./jsx/signIn.jsx";
 import SignUp from "./jsx/signUp.jsx";
+import Edit from "./jsx/edit.jsx";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Create the app function
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/edit/:id/:index" element={<Edit />} />
       </Routes>
     </Router>
   )
